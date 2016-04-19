@@ -18,6 +18,10 @@
             <key/>
             <default value="0"/>
         </field>
+        <field name="akMaxItems" type="integer" size="10">
+            <unsigned/>
+            <default value="0"/>
+        </field>
         <field name="akType" type="text">
         </field>
 

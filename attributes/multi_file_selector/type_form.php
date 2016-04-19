@@ -1,4 +1,6 @@
-<?php defined('C5_EXECUTE') or die("Access Denied."); ?>
+<?php defined('C5_EXECUTE') or die("Access Denied.");
+
+?>
 
 <?php
 $typeList = array();
@@ -26,5 +28,11 @@ $typeList['app'] = t('Application file types');
             }
             ?>
         </select>
+    </div>
+
+    <div class="form-group">
+        <label><?php echo t("Maximum Number Of Files")?></label>
+        <?php echo $form->number('akMaxItems', (isset($akMaxItems) ? $akMaxItems : 0), array('min'=>'0','step'=>'1')); ?>
+        <span class="help-block"><?php echo t('Enter 0 or blank for no limit');?></span>
     </div>
 </fieldset>

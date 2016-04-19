@@ -105,15 +105,21 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
 		}
 
+		$hide = '';
+
+		if ($this->akMaxItems > 0 && count($values) >= $this->akMaxItems) {
+			$hide = 'hidden';
+		}
+
 		$filter = '';
 		$check = 'if(true){';
 
-		if ($filetype) {
+		if ($filetype && $this->akType != 'file') {
 			$filter =  ", filters : [{ field : 'type', type : '"  . $filetype . "' }]";
 			$check = 'if (file.genericTypeText == "' . FileType::getGenericTypeText($filetype) . '") {';
 		}
 
-		echo "<div href=\"#\" id=\"". $id ."_launch\" data-launch=\"file-manager\" class=\"ccm-file-selector\"><div class=\"ccm-file-selector-choose-new\">".$label."</div></div>
+		echo "<div href=\"#\" id=\"". $id ."_launch\" data-max-items=\"".$this->akMaxItems."\" data-launch=\"file-manager\" class=\"ccm-file-selector ". $hide ."\"><div class=\"ccm-file-selector-choose-new\">".$label."</div></div>
 		<script type=\"text/javascript\">
 		$(function() {
 			$('#" . $id ."_launch').on('click', function(e) {
@@ -128,8 +134,14 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 						for(var i in r.files) {
 							var file = r.files[i];
 							" .$check. "
-							$('#" . $id ."').append('<li class=\"list-group-item\">'+ file.resultsThumbnailImg +' ' +  file.title +'<a><i class=\"pull-right fa fa-minus-circle\"></i></a><input type=\"hidden\" name=\"" . $this->field('value') . "[]\" value=\"' + file.fID + '\" /></li>');
-							$('#ccm-panel-detail-page-attributes').animate({scrollTop: '+=83px'}, 0);
+								$('#" . $id ."').append('<li class=\"list-group-item\">'+ file.resultsThumbnailImg +' ' +  file.title +'<a><i class=\"pull-right fa fa-minus-circle\"></i></a><input type=\"hidden\" name=\"" . $this->field('value') . "[]\" value=\"' + file.fID + '\" /></li>');
+								$('#ccm-panel-detail-page-attributes').animate({scrollTop: '+=83px'}, 0);
+
+								var maxItems = 	$('#" . $id ."_launch').data('max-items');
+
+								if (maxItems > 0 && $('#" . $id ." li').size() >= maxItems) {
+									$('#" . $id ."_launch').addClass('hidden');
+								}
 							} else {
 								alert('".t('Please select only %s file types', FileType::getGenericTypeText($filetype))."');
 							}
@@ -142,6 +154,12 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
 			$('#" . $id ."').on('click', 'a', function(){
 				$(this).parent().remove();
+
+				var maxItems = 	$('#" . $id ."_launch').data('max-items');
+
+				if (maxItems > 0 && $('#" . $id ." li').size() < maxItems) {
+					$('#" . $id ."_launch').removeClass('hidden');
+				}
 			});
 		});
 		</script>
@@ -164,11 +182,14 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 		}
 
 		$db =  \Database::connection();
-		$row = $db->query('select akType from atMultiFileSelectorSettings where akID = ?', array($ak->getAttributeKeyID()));
+		$row = $db->query('select akType, akMaxItems from atMultiFileSelectorSettings where akID = ?', array($ak->getAttributeKeyID()));
 		$row = $row->fetch();
 
 		$this->akType = $row['akType'];
 		$this->set('akType', $this->akType);
+
+		$this->akMaxItems = $row['akMaxItems'];
+		$this->set('akMaxItems', $this->akMaxItems);
 	}
 
 	public function type_form() {
@@ -205,9 +226,11 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 		}
 
 		$akType = $data['akType'];
+		$akMaxItems = (int)$data['akMaxItems'];
 
 		$db->Replace('atMultiFileSelectorSettings', array(
 			'akID' => $ak->getAttributeKeyID(),
+			'akMaxItems' => $akMaxItems,
 			'akType' => $akType
 		), array('akID'), true);
 	}
