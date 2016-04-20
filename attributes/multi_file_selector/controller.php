@@ -6,29 +6,28 @@ use \Concrete\Core\File\Type\Type as FileType;
 
 class Controller extends \Concrete\Core\Attribute\Controller  {
 
- 	public function getValue() {
+ 	public function getRawValue() {
 		$db = \Database::connection();
 		$value = $db->fetchColumn("select value from atMultiFileSelector where avID = ?", array($this->getAttributeValueID()));
-		return trim($value);	
+		return trim($value);
 	}
 	
-	public function getFileArrayValue() {
+	public function getValue() {
 		$fileIDs = $this->getFileIDsArrayValue();
 			
 		foreach($fileIDs as $fID) {
 			$file = \File::getByID($fID);
-			if (!$file) {
+			if ($file) {
 				$files[] = $file;
 			}
-		}	
-		
+		}
+
 		return $files;
 	}
 
 	public function getFileIDsArrayValue() {
-		$value = $this->getValue();
+		$value = $this->getRawValue();
 		$fileIDs = array();
-		$files = array();
 
 		if ($value) {
 			$fileIDs = explode(',', $value);
@@ -39,17 +38,7 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
  	public function form() {
 		$this->load();
-		$value = '';
-
-		if (is_object($this->attributeValue)) {
-			$value = trim($this->getAttributeValue()->getValue());
-		}
-
-		if ($value) {
-			$values = explode(',',$value);
-		} else {
-			$values = array();
-		}
+		$values =  $this->getValue();
 
 		$v = \View::getInstance();
 		$v->requireAsset('core/file-manager');
@@ -58,14 +47,9 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
 		echo '<ul class="list-group multi-file-list" id="'.$id.'">';
 		if (!empty($values)) {
-			foreach ($values as $v) {
-
-				$file = \File::getByID($v);
-
-				if ($file) {
-					$thumb = $file->getListingThumbnailImage();
-					echo '<li class="list-group-item">' . $thumb . ' ' .$file->getTitle() .'<a><i class="pull-right fa fa-minus-circle"></i></a><input type="hidden" name="' . $this->field('value') . '[]" value="' . $v . '" /></li>';
-				}
+			foreach ($values as $file) {
+				$thumb = $file->getListingThumbnailImage();
+				echo '<li class="list-group-item">' . $thumb . ' ' .$file->getTitle() .'<a><i class="pull-right fa fa-minus-circle"></i></a><input type="hidden" name="' . $this->field('value') . '[]" value="' . $file->getFileID() . '" /></li>';
 			}
 		}
 		echo '</ul>';
@@ -92,7 +76,7 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 				$label = t('Choose Audio File');
 				break;
 			case 'doc':
-				$filetype = FileType::T_DOC;
+				$filetype = FileType::T_DOCUMENT;
 				$label = t('Choose Document');
 				break;
 			case 'app':
@@ -100,7 +84,7 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 				$label = t('Choose Application File');
 				break;
 			default:
-				$filetype = FileType::T_UNKNOWN;
+				$filetype = '';
 				$label = t('Choose File');
 
 		}
@@ -111,10 +95,10 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 			$hide = 'hidden';
 		}
 
-		$filter = '';
+		$filter =  ", filters : []";
 		$check = 'if(true){';
 
-		if ($filetype && $this->akType != 'file') {
+		if ($filetype) {
 			$filter =  ", filters : [{ field : 'type', type : '"  . $filetype . "' }]";
 			$check = 'if (file.genericTypeText == "' . FileType::getGenericTypeText($filetype) . '") {';
 		}
@@ -131,19 +115,26 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
 				ConcreteFileManager.launchDialog(function (data) {
 					ConcreteFileManager.getFileDetails(data.fID, function(r) {
-						for(var i in r.files) {
-							var file = r.files[i];
-							" .$check. "
-								$('#" . $id ."').append('<li class=\"list-group-item\">'+ file.resultsThumbnailImg +' ' +  file.title +'<a><i class=\"pull-right fa fa-minus-circle\"></i></a><input type=\"hidden\" name=\"" . $this->field('value') . "[]\" value=\"' + file.fID + '\" /></li>');
-								$('#ccm-panel-detail-page-attributes').animate({scrollTop: '+=83px'}, 0);
+						var maxItems = 	$('#" . $id ."_launch').data('max-items');
+						var currentItems = $('#" . $id ." li').size();
 
-								var maxItems = 	$('#" . $id ."_launch').data('max-items');
+						if (maxItems > 0 && r.files.length > (maxItems - currentItems)) {
+							alert('".t('Please select a maximum of')."' + ' ' + (maxItems - currentItems) + ' ' +  '".t('files'). "');
+						} else {
+							for(var i in r.files) {
+								var file = r.files[i];
+								" .$check. "
+									$('#" . $id ."').append('<li class=\"list-group-item\">'+ file.resultsThumbnailImg +' ' +  file.title +'<a><i class=\"pull-right fa fa-minus-circle\"></i></a><input type=\"hidden\" name=\"" . $this->field('value') . "[]\" value=\"' + file.fID + '\" /></li>');
+									$('#ccm-panel-detail-page-attributes').animate({scrollTop: '+=83px'}, 0);
 
-								if (maxItems > 0 && $('#" . $id ." li').size() >= maxItems) {
-									$('#" . $id ."_launch').addClass('hidden');
+									var currentItems = $('#" . $id ." li').size();
+
+									if (maxItems > 0 && currentItems >= maxItems) {
+										$('#" . $id ."_launch').addClass('hidden');
+									}
+								} else {
+									alert('".t('Please select only %s file types', t($filetype ? FileType::getGenericTypeText($filetype) : 'file'))."');
 								}
-							} else {
-								alert('".t('Please select only %s file types', FileType::getGenericTypeText($filetype))."');
 							}
 						}
 					});

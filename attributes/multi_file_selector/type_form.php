@@ -4,7 +4,7 @@
 
 <?php
 $typeList = array();
-$typeList['file'] = t('Any file type');
+$typeList['any'] = t('Any file type');
 $typeList['image'] = t('Image file types');
 $typeList['video'] = t('Video file types');
 $typeList['text'] = t('Text file types');
