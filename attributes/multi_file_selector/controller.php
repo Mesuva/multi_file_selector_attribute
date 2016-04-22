@@ -119,7 +119,13 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 						var currentItems = $('#" . $id ." li').size();
 
 						if (maxItems > 0 && r.files.length > (maxItems - currentItems)) {
-							alert('".t('Please select a maximum of')."' + ' ' + (maxItems - currentItems) + ' ' +  '".t('files'). "');
+							var toomanymessage = '".t('Please select a maximum of %1$s files to add, %2$s of %3$s files are currently selected') . "';" . '
+							var remaining = maxItems - currentItems;
+							toomanymessage = toomanymessage.replace(\'%1$s\',remaining);
+							toomanymessage = toomanymessage.replace(\'%2$s\',currentItems);
+							toomanymessage = toomanymessage.replace(\'%3$s\',maxItems);
+							alert(toomanymessage);
+							' . "
 						} else {
 							for(var i in r.files) {
 								var file = r.files[i];
