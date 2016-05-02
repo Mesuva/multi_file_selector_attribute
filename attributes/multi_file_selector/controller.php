@@ -57,35 +57,35 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 		switch($this->akType) {
 			case 'file':
 				$filetype = FileType::T_UNKNOWN;
-				$label = t('Choose File');
+				$label = t('Choose Files');
 				break;
 			case 'image':
 				$filetype = FileType::T_IMAGE;
-				$label = t('Choose Image');
+				$label = t('Choose Images');
 				break;
 			case 'video':
 				$filetype = FileType::T_VIDEO;
-				$label = t('Choose Video File');
+				$label = t('Choose Video Files');
 				break;
 			case 'text':
 				$filetype = FileType::T_TEXT;
-				$label = t('Choose Text File');
+				$label = t('Choose Text Files');
 				break;
 			case 'audio':
 				$filetype = FileType::T_AUDIO;
-				$label = t('Choose Audio File');
+				$label = t('Choose Audio Files');
 				break;
 			case 'doc':
 				$filetype = FileType::T_DOCUMENT;
-				$label = t('Choose Document');
+				$label = t('Choose Documents');
 				break;
 			case 'app':
 				$filetype = FileType::T_APPLICATION;
-				$label = t('Choose Application File');
+				$label = t('Choose Application Files');
 				break;
 			default:
 				$filetype = '';
-				$label = t('Choose File');
+				$label = t('Choose Files');
 
 		}
 
@@ -161,7 +161,9 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 		});
 		</script>
 		<style>
+			.ccm-ui .multi-file-list {margin-bottom: 0};
 			.multi-file-list li {cursor: move}
+			.ccm-ui .multi-file-list li:last-child {margin-bottom: 10px;}
 			.multi-file-list img {max-width: 60px!important; display: inline!important; margin-right: 10px;}
 			.multi-file-list .fa {cursor: pointer}
 			.multi-file-list a:hover {color: red}
