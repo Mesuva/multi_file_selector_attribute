@@ -91,7 +91,7 @@ class Controller extends \Concrete\Core\Attribute\Controller  {
 
 		$hide = '';
 
-		if ($this->akMaxItems > 0 && count($values) >= $this->akMaxItems) {
+		if ($this->akMaxItems > 0 && !empty($values) && count($values) >= $this->akMaxItems) {
 			$hide = 'hidden';
 		}
 
