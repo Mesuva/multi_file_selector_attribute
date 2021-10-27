@@ -17,3 +17,5 @@ $fileList = $c->getAttribute('gallery_files');
 For reference, the original string with comma seperated ID values can be retrived via:
 $fileListIDs = $c->getAttribute('gallery_files', 'raw');
 ```
+## Deprecated
+This attribute is fine v7 cores. For v8+ use the newer https://github.com/Mesuva/msv_multiple_file_selector_attribute
